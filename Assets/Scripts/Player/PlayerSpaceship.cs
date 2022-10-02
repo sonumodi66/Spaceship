@@ -189,7 +189,8 @@ public class PlayerSpaceship : MonoBehaviour
         {
             healthAmount -= damageAmount;
         }
-        else
+
+        if (healthAmount <= 0)
         {
             healthAmount = 0;
             DiePlayerSpaceship();

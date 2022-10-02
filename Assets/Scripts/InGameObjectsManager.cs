@@ -8,12 +8,12 @@ using Random = UnityEngine.Random;
 
 public class InGameObjectsManager : MonoBehaviour
 {
-    [Header("Childs References")]
+    [Header("Hierarachy References")]
     [SerializeField] Transform[] instantiationPoints;
+    [SerializeField] CoinsPattern coinsPattern;
 
     [Header("Assets References")]
     [SerializeField] private Asteroid[] asteroidPrefabs;
-
     [SerializeField] private Armor spaceshipArmorPrefab;
     [SerializeField] private CrescentArmPowerup crescentArmPowerup;
 
@@ -39,7 +39,7 @@ public class InGameObjectsManager : MonoBehaviour
 
         HideInstantiationPointsMeshes();
         _ = GenerateAsteroidObstacles();
-        _ = GenerateSpaceshipArmorAndCrescentMoor();
+        _ = GenerateAndMoveSpecificObjects();
     }
     //----------------------------------------------------------------------------------
     void HideInstantiationPointsMeshes()
@@ -62,14 +62,16 @@ public class InGameObjectsManager : MonoBehaviour
         }
     }
 
-    async UniTask GenerateSpaceshipArmorAndCrescentMoor()
+    async UniTask GenerateAndMoveSpecificObjects()
     {
         await UniTask.Delay(5000);
         while (isGenerateArmor)
         {
-            if (Random.Range(0, 2f) == 0)
+            int random = Random.Range(0, 2);
+
+            if (random == 0)
                 SpawnPooledObject(spaceshipArmorPrefab.name, armorXRange);
-            else
+            else if(random == 1)
                 SpawnPooledObject(crescentArmPowerup.name, armorXRange);
 
             await UniTask.Delay(armorInstInterval * 1000);
@@ -78,6 +80,22 @@ public class InGameObjectsManager : MonoBehaviour
 
     //----------------------------------------------------------------------------------
     IPoolableObject SpawnPooledObject(string _objName, float _xRange)
+    {
+        Vector3 insPos, direction;
+        GetRandomPointAndDirection(out insPos, out direction);
+
+        var tempPooled = ObjectPooler_Sonu.instance.GetPooledObject(_objName);
+
+        tempPooled.Spawn(insPos, direction);
+        return tempPooled;
+    }
+
+    void SpawnAndMoveCoinsPattern()
+    {
+
+    }
+
+    public void GetRandomPointAndDirection(out Vector3 insPos, out Vector3 direction)
     {
         int random = Random.Range(0, instantiationPoints.Length);
         int opposite = (random <= 3) ? (random + 4) : (random - 4);
@@ -88,13 +106,7 @@ public class InGameObjectsManager : MonoBehaviour
             else opposite--;
         }
 
-        Vector3 insPos = instantiationPoints[random].position;
-
-        Vector3 direction = instantiationPoints[opposite].position - insPos;
-
-        var tempPooled = ObjectPooler_Sonu.instance.GetPooledObject(_objName);
-
-        tempPooled.Spawn(insPos, direction);
-        return tempPooled;
+        insPos = instantiationPoints[random].position;
+        direction = instantiationPoints[opposite].position - insPos;
     }
 }

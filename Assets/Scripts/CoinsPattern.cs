@@ -7,12 +7,17 @@ using Random = UnityEngine.Random;
 public class CoinsPattern : MonoBehaviour, IResetable
 {
     [SerializeField] private Coin coinPrefab;
+    [SerializeField] InGameObjectsManager ingameObjManager;
 
     private List<IPoolableObject> coinsList = new List<IPoolableObject>();
-
     private int coinsAmountToPool = 10;
-
     private PlayerSpaceship playerSpaceship;
+
+    bool canMove;
+    Vector3 direction;
+    float moveSpeed;
+
+
     //---------------------------------------------------------------------
     private void Start()
     {
@@ -20,10 +25,13 @@ public class CoinsPattern : MonoBehaviour, IResetable
         Invoke(nameof(PoolCoins), 1f);
     }
 
-    //---------------------------------------------------------------------
-    public void ResetCoinsBack()
+    private void Update()
     {
-        transform.position = new Vector3(Random.Range(-3f, 3f), playerSpaceship.transform.position.y + 10f, 0f);
+        transform.Translate(direction * Time.deltaTime * moveSpeed);
+    }
+    //---------------------------------------------------------------------
+    private void ResetCoinsBack()
+    {
         int coinsAmount = Random.Range(coinsList.Count - 4, coinsList.Count + 1);
         
         for (int i = 0; i < coinsAmount; i++)
@@ -35,6 +43,8 @@ public class CoinsPattern : MonoBehaviour, IResetable
         {
             coinsList[i].itsGameObject.SetActive(false);
         }
+
+        InitCoinMovement();
     }
     //---------------------------------------------------------------------
     private void PoolCoins()
@@ -56,6 +66,18 @@ public class CoinsPattern : MonoBehaviour, IResetable
     //---------------------------------------------------------------------
     public void Reset()
     {
+        canMove = false;
         ResetCoinsBack();
+    }
+
+    public void InitCoinMovement()
+    {
+        Vector3 insPos, dir;
+        ingameObjManager.GetRandomPointAndDirection(out insPos, out dir);
+
+        transform.position = insPos;
+        direction = dir;
+        canMove = true;
+        moveSpeed = Random.Range(0.05f, 0.2f);
     }
 }

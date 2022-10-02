@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,15 +14,27 @@ public class UIManager : MonoBehaviour
     [SerializeField] Image healthFillImage;
     [SerializeField] Text healthText;
     [SerializeField] DieEffect dieEffect;
+
+    [Header("Game Over")]
+    [SerializeField] Transform gameOverPanel;
+    [SerializeField] Text coinsCollectedText;
+    [SerializeField] Text pointsCollectedText;
+    [SerializeField] Button restartGameButton;
     //-------------------------------------------------------------------------
     private void OnEnable()
     {
         PlayerSpaceship.onPlayerHealthChanged += UpdateHealthData;
+        PlayerSpaceship.onPlayerSpaceshipDied += ShowGameOverPanel;
     }
 
     private void OnDisable()
     {
         PlayerSpaceship.onPlayerHealthChanged -= UpdateHealthData;
+        PlayerSpaceship.onPlayerSpaceshipDied -= ShowGameOverPanel;
+    }
+    private void Start()
+    {
+        restartGameButton.onClick.AddListener(Button_OnRestartGame);
     }
     //-------------------------------------------------------------------------
     public void UpdateCoinsAmount(int _coinsCount)
@@ -42,9 +55,26 @@ public class UIManager : MonoBehaviour
         if (_healthAmount < 95)
             dieEffect.gameObject.SetActive(true);
     }
-
+    
+    void ShowGameOverPanel()
+    {
+        coinsCollectedText.text = "Coins : " + coinsText.text;
+        pointsCollectedText.text = "Score : " + pointsText.text;
+        gameOverPanel.gameObject.SetActive(true);
+        gameOverPanel.transform.DOScale(Vector3.one, 0.2f);
+            //.OnComplete(() => container.SetActive(false))
+            //.OnComplete(() => _onHidden?.Invoke());
+    }
+    //------------------------------------------------------------------------------------------
     public void ChangePlayerWeaponType(int _typeIndex)
     {
         GameManager.instance.PlayerSpaceship.ChangeWeapon(_typeIndex);
     }
+
+    void Button_OnRestartGame()
+    {
+        GameManager.instance.RestartGame();
+    }
+
+
 }
