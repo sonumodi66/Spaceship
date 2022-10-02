@@ -44,9 +44,8 @@ public class CameraFollowSpaceship : MonoBehaviour
         Vector3 targetPos = new Vector3
         (
             // 0f,
-            playerSpaceship.transform.position.x,
-            // Mathf.Clamp(playerSpaceship.transform.position.x, -1f, 1f),
-            playerSpaceship.transform.position.y - initialOffset,
+            Mathf.Clamp(playerSpaceship.transform.position.x, -6f, 6f),
+            Mathf.Clamp(playerSpaceship.transform.position.y, -5f, 5f),
             zPos
         );
 

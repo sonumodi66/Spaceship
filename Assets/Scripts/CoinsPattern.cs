@@ -48,7 +48,7 @@ public class CoinsPattern : MonoBehaviour, IResetable
             coinsList.Add(tempCoin);
 
             tempCoin.itsGameObject.transform.parent = this.transform;
-            tempCoin.Spawn(new Vector3(0f, i, 0f));
+            tempCoin.Spawn(new Vector3(0f, i, 0f), Vector3.zero);
         }
         
         ResetCoinsBack();

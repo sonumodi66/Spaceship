@@ -6,7 +6,7 @@ public interface IPoolableObject
 {
     GameObject itsGameObject { get;}
 
-    void Spawn(Vector3 _spawnPos);
+    void Spawn(Vector3 _spawnPos, Vector3 _movingDirection);
     void Reset();
 }
 

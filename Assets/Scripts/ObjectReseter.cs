@@ -50,8 +50,7 @@ public class ObjectReseter : MonoBehaviour
         {
             bool canReset = gameObject.activeInHierarchy &&
                             iResetable != null &&
-                            transform.position.y < playerSpaceship.transform.position.y &&
-                            Vector3.Distance(transform.position, playerSpaceship.transform.position) > 5f;
+                            Vector3.Distance(transform.position, playerSpaceship.transform.position) > 20f;
 
             if (canReset) iResetable.Reset();
             yield return new WaitForSeconds(checkDuration);

@@ -7,7 +7,7 @@ public class GameParticles : MonoBehaviour, IPoolableObject
     [SerializeField] private float deactivateAfterTime = 1f; 
     public GameObject itsGameObject => this.gameObject;
 
-    public void Spawn(Vector3 _spawnPos)
+    public void Spawn(Vector3 _spawnPos, Vector3 _movingDirection)
     {
         transform.position = _spawnPos;
         gameObject.SetActive(true);

@@ -22,7 +22,7 @@ public class Asteroid : MonoBehaviour, IPoolableObject, IResetable
     private string[] asteroidNames = {"Asteroid 1", "Asteroid 2", "Asteroid 3"};
 
     private IPoolableObject tempAsteroid;
-
+    Vector3 movingDir;
     //-------------------------------------------------------------------------------------
     private void Start()
     {
@@ -43,7 +43,7 @@ public class Asteroid : MonoBehaviour, IPoolableObject, IResetable
             }
             else
             {
-                ObjectPooler_Sonu.instance.GetPooledObject(breakingSmall.name).Spawn(transform.position);
+                ObjectPooler_Sonu.instance.GetPooledObject(breakingSmall.name).Spawn(transform.position, Vector3.zero);
                 Reset();
                 GameManager.instance.IncrementPoints();
 
@@ -100,28 +100,30 @@ public class Asteroid : MonoBehaviour, IPoolableObject, IResetable
             tempAsteroid =
                 ObjectPooler_Sonu.instance.GetPooledObject(
                     asteroidNames[Random.Range(0, asteroidNames.Length)]);
-            tempAsteroid.Spawn(transform.position);
+            tempAsteroid.Spawn(transform.position, Vector3.zero);
             tempAsteroid.itsGameObject.GetComponent<Asteroid>().SetAsSmallBronkenAsteroid(i);
         }
 
-        ObjectPooler_Sonu.instance.GetPooledObject(breakingSmoke.name).Spawn(transform.position);
+        ObjectPooler_Sonu.instance.GetPooledObject(breakingSmoke.name).Spawn(transform.position, movingDir);
         Reset();
     }
 
     //-------------------------------------------------------------------------------
     public GameObject itsGameObject => this.gameObject;
 
-    public void Spawn(Vector3 _spawnPos)
+    public void Spawn(Vector3 _spawnPos, Vector3 _movingDirection)
     {
         transform.position = _spawnPos;
         gameObject.SetActive(true);
 
-        transform.localScale = Vector3.one * Random.Range(0.5f, 1.2f);
+        transform.localScale = Vector3.one * Random.Range(0.3f, 0.7f);
 
         if (rigidbodyComp == null) rigidbodyComp = GetComponent<Rigidbody>();
 
         rigidbodyComp.angularVelocity = Random.insideUnitSphere * Random.Range(0.2f, 1f);
-        rigidbodyComp.velocity = Vector3.down * Random.Range(0.5f, 3f);
+        movingDir = _movingDirection * Random.Range(0.5f, 1f);
+        movingDir.z = 0f;
+        rigidbodyComp.velocity = movingDir * Random.Range(0.05f, 0.3f);
 
         isStartedMoving = true;
     }

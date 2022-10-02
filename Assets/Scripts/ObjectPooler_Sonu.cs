@@ -33,6 +33,8 @@ public class ObjectPooler_Sonu : MonoBehaviour
         //No Remaining Object Pool More
         if (pooledData_Dict[_pooledObjectName].Count <= 0)
         {
+            PoolMoreObjects(_pooledObjectName);
+            GetPooledObject(_pooledObjectName);
         }
         else
         {
@@ -42,6 +44,29 @@ public class ObjectPooler_Sonu : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void PoolMoreObjects(string _pooledObjectName)
+    {
+        if (!pooledData_Dict.ContainsKey(_pooledObjectName)) return;
+
+        GameObject prefabToPool = null;
+        GameObject tempPooledObject = null;
+
+        for (int i = 0; i < objectsToPool_List.Count; i++)
+        {
+            if (String.Equals(objectsToPool_List[i].objectToPool.name, _pooledObjectName))
+                prefabToPool = objectsToPool_List[i].objectToPool;
+        }
+
+        if (prefabToPool == null)
+            return;
+
+        tempPooledObject = Instantiate(prefabToPool);
+        tempPooledObject.SetActive(false);
+        tempPooledObject.name = _pooledObjectName;
+
+        pooledData_Dict[_pooledObjectName].Add(tempPooledObject.GetComponent<IPoolableObject>());
     }
 
     public void ResetBackPooledObject(GameObject _pooledObject)
@@ -64,7 +89,7 @@ public class ObjectPooler_Sonu : MonoBehaviour
 
         for (int i = 0; i < objectsToPool_List.Count; i++)
         {
-            poolParent = new GameObject(objectsToPool_List[i].objectToPool.name + "s");
+            poolParent = new GameObject(objectsToPool_List[i].objectToPool.name);
             List<IPoolableObject> pooledList = new List<IPoolableObject>();
             pooledList.Clear();
 

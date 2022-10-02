@@ -28,7 +28,7 @@ public class Coin : MonoBehaviour, IPoolableObject, ICollectable
 
     public GameObject itsGameObject => this.gameObject;
     
-    public void Spawn(Vector3 _spawnPos)
+    public void Spawn(Vector3 _spawnPos, Vector3 _movingDirection)
     {
         transform.localPosition = _spawnPos;
         gameObject.SetActive(true);
