@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baa8c939c65395f46bba5c0fa69bfebf, type: 3}
+  m_Name: Toughness and Generation Data
+  m_EditorClassIdentifier: 
+  incrementRate: 32
+  incrementTimeRate: 11
+  crescentPowerupRate: 10
+  isRandmizeCrescentRate: 1
+  armorGenerationRate: 10
+  isRandmizeArmorRate: 1

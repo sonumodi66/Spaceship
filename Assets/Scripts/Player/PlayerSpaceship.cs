@@ -1,17 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class PlayerSpaceship : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 10f;
-    [SerializeField] private float rotSpeed = 10f;
-    [SerializeField] float fireGap = 0.2f;
-    [SerializeField] private float armorDuration = 5f;
-    [SerializeField] private float crescentWeaponDuration = 10f;
-    [SerializeField] private int damageAmount = 10;
+    [SerializeField] private SpaceshipData spaceShipData;
 
     [Header("Child References")]
     [SerializeField] private Transform spaceShipBulletFirePos;
@@ -19,16 +13,25 @@ public class PlayerSpaceship : MonoBehaviour
     [SerializeField] private GameObject crescenmoonFirer;
 
     [Header("Assets References")]
-    [SerializeField] private Bullet bulletPrefab;
-    [SerializeField] private Bullet crescentBulletPrefab;
-    [SerializeField] private Bullet shockWaveBulletPrefab;
+    [SerializeField] private BaseBullet basicBulletPrefab;
+    [SerializeField] private BaseBullet triAngledBulletPrefab;
+    [SerializeField] private BaseBullet crescentBulletPrefab;
+    [SerializeField] private BaseBullet shockWaveBulletPrefab;
 
     [Header("RunTime Uses")]
     [SerializeField] WeaponType weaponType;
+    [SerializeField] bool canPlayerDie;
 
     public static Action onCoinCollected;
     public static Action onPlayerSpaceshipDied;
     public static Action<int> onPlayerHealthChanged;
+
+    private float moveSpeed = 10f;
+    private float rotSpeed = 10f;
+    private float fireGap = 0.2f;
+    private float armorDuration = 5f;
+    private float crescentWeaponDuration = 10f;
+    private int damageAmount = 10;
 
     private float xClampLimit = 18f;
     private float yClampLimit = 12f;
@@ -41,28 +44,43 @@ public class PlayerSpaceship : MonoBehaviour
     int healthAmount = 100;
 
     private bool isArmorActive = false;
+    bool canPlayerBeControlled;
 
     private Rigidbody rigidbodyComp;
     private Transform shipMesh;
     //-----------------------------------------------------------------------------------------------------
+    private void OnEnable()
+    {
+        GameCinematicController.onCinemeticCompleted += EnablePlayerToBeControlled;
+    }
+    private void OnDisable()
+    {
+        GameCinematicController.onCinemeticCompleted -= EnablePlayerToBeControlled;
+    }
+
     private void Start()
     {
         rigidbodyComp = GetComponent<Rigidbody>();
         shipMesh = transform.GetChild(0);
 
-        healthAmount = 100;
-        onPlayerHealthChanged?.Invoke(100);
+        GetDataAndDetails();
+
+        onPlayerHealthChanged?.Invoke(healthAmount);
     }
 
 
     private void FixedUpdate()
     {
+        if (!canPlayerBeControlled) return;
+
         ControlSpaceship();
         ClampSpaceshipPositon();
     }
 
     private void Update()
     {
+        if (!canPlayerBeControlled) return;
+
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
 
@@ -100,20 +118,42 @@ public class PlayerSpaceship : MonoBehaviour
             }
             else
             {
-                other.GetComponent<IPoolableObject>().itsGameObject.GetComponent<Asteroid>().DestroyAndInstantiateTwoPieces(0, false);
+                other.GetComponent<IPoolableObject>().itsGameObject.GetComponent<Asteroid>().DestroyAndInstantiatSmallPieces(false);
             }
         }
     }
 
     //-----------------------------------------------------------------------------------------------------
+    void EnablePlayerToBeControlled()
+    {
+        canPlayerBeControlled = true;
+    }
+    void GetDataAndDetails()
+    {
+        healthAmount = spaceShipData.fullHealth;
+        damageAmount = spaceShipData.spaceshipDamageRate;
+    }
+    //-----------------------------------------------------------------------------------------------------
+    /// <summary>
+    ///Controling of Player spaceship as per provided input
+    /// </summary>
     private void ControlSpaceship()
     {
-        Quaternion targetRot = Quaternion.Euler(vertical * rotSpeed, -horizontal * rotSpeed, transform.rotation.eulerAngles.z - horizontal * rotSpeed);
+        Quaternion targetRot =
+            Quaternion.Euler
+            (
+            vertical * spaceShipData.rotationSpeed,
+            -horizontal * spaceShipData.rotationSpeed,
+            transform.rotation.eulerAngles.z - horizontal * spaceShipData.rotationSpeed
+            );
 
         rigidbodyComp.MoveRotation(Quaternion.Lerp(transform.rotation, targetRot, rotSpeed));
-        rigidbodyComp.velocity = transform.up * moveSpeed * vertical;
+        rigidbodyComp.velocity = transform.up * spaceShipData.moveSpeed * vertical;
     }
 
+    /// <summary>
+    /// Clamp player movement limit as per defined values
+    /// </summary>
     private void ClampSpaceshipPositon()
     {
         float clampedXpos = Mathf.Clamp(transform.position.x, -xClampLimit, xClampLimit);
@@ -125,17 +165,17 @@ public class PlayerSpaceship : MonoBehaviour
     {
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            if (Time.time > (lastFiredTime + fireGap))
+            if (Time.time > (lastFiredTime + spaceShipData.fireGap))
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    FireAsPerWeaponType();
-                }
+                FireAsPerWeaponType();
                 lastFiredTime = Time.time;
             }
         }
     }
 
+    /// <summary>
+    /// Fire bullet as per selected weapon type 
+    /// </summary>
     private void FireAsPerWeaponType()
     {
         Vector3 dir = spaceShipBulletFirePos.position - transform.position;
@@ -143,33 +183,34 @@ public class PlayerSpaceship : MonoBehaviour
         switch (weaponType)
         {
             case WeaponType.BASIC_BULLET:
-                for (int i = 0; i < 3; i++)
-                {
-                    Fire(i, dir, bulletPrefab.name);
-                }
+                for (int i = 0; i < basicBulletPrefab.BulletData.oneShotBulletsCount; i++)
+                    Fire(i, dir, basicBulletPrefab.name);
                 break;
 
             case WeaponType.TRI_ANGLED_BULLET:
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < triAngledBulletPrefab.BulletData.oneShotBulletsCount; i++)
                 {
-                    Fire(i, dir, bulletPrefab.name);
-                    Vector3 angledDir = Quaternion.AngleAxis(30, transform.forward) * dir;
+                    Fire(i, dir, triAngledBulletPrefab.name);
+                    Vector3 angledDir = Quaternion.AngleAxis(triAngledBulletPrefab.BulletData.angleValue, transform.forward) * dir;
 
-                    Fire(i, angledDir, bulletPrefab.name);
-                    angledDir = Quaternion.AngleAxis(30, -transform.forward) * dir;
-                    Fire(i, angledDir, bulletPrefab.name);
+                    Fire(i, angledDir, triAngledBulletPrefab.name);
+                    angledDir = Quaternion.AngleAxis(triAngledBulletPrefab.BulletData.angleValue, -transform.forward) * dir;
+                    Fire(i, angledDir, triAngledBulletPrefab.name);
                 }
                 break;
 
             case WeaponType.CRESCENT_MOON_BULLET:
-                Fire(0, dir, crescentBulletPrefab.name);
+                for (int i = 0; i < crescentBulletPrefab.BulletData.oneShotBulletsCount; i++)
+                    Fire(i, dir, crescentBulletPrefab.name);
                 break;
 
             case WeaponType.SHOCK_WAVE_BULLET:
-                Fire(0, dir, shockWaveBulletPrefab.name);
+                for (int i = 0; i < shockWaveBulletPrefab.BulletData.oneShotBulletsCount; i++)
+                    Fire(i, dir, shockWaveBulletPrefab.name);
                 break;
 
             default:
+                Debug.Log("No Bullet Data");
                 break;
         }
     }
@@ -180,9 +221,12 @@ public class PlayerSpaceship : MonoBehaviour
         firePos += (_direction) * i * 0.6f;
         firePos.z = 0;
 
-        ObjectPooler_Sonu.instance.GetPooledObject(_bulletName).Spawn(firePos, _direction);
+        ObjectPoolManager.instance.GetPooledObject(_bulletName).Spawn(firePos, _direction);
     }
 
+    /// <summary>
+    /// Taking player damage and reducing health
+    /// </summary>
     void TakeDamage()
     {
         if (healthAmount > 0)
@@ -201,15 +245,18 @@ public class PlayerSpaceship : MonoBehaviour
 
     void DiePlayerSpaceship()
     {
-        onPlayerSpaceshipDied?.Invoke();
-        gameObject.SetActive(false);
+        if (canPlayerDie)
+        {
+            onPlayerSpaceshipDied?.Invoke();
+            gameObject.SetActive(false);
+        }
     }
     //---------------------------------------------------------------------------------------------
     void ActivateSpaceshipArmor()
     {
         spaceshipArmor.SetActive(true);
         isArmorActive = true;
-        Invoke(nameof(DeactivateArmorAfterTime), armorDuration);
+        Invoke(nameof(DeactivateArmorAfterTime), spaceShipData.armorDuration);
     }
 
     void DeactivateArmorAfterTime()
@@ -225,7 +272,7 @@ public class PlayerSpaceship : MonoBehaviour
     {
         crescenmoonFirer.SetActive(true);
         weaponType = WeaponType.CRESCENT_MOON_BULLET;
-        Invoke(nameof(DeactivateCrescentMoonWeapon), crescentWeaponDuration);
+        Invoke(nameof(DeactivateCrescentMoonWeapon), spaceShipData.crescentWeaponDuration);
     }
 
     void DeactivateCrescentMoonWeapon()
