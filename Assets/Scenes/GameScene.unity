@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.35701558, g: 0.2891757, b: 0.32015565, a: 1}
+  m_IndirectSpecularColor: {r: 0.07464243, g: 0.14204624, b: 0.19303346, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -9888,7 +9888,7 @@ MonoBehaviour:
     objectToPool: {fileID: 7970386752264290969, guid: 70141aff871a7c94c9374031bd7aafa7, type: 3}
     amount: 10
     isAutoExpand: 1
-  - poolName: Armor
+  - poolName: Armour
     objectToPool: {fileID: 5030671727455932815, guid: 64db8a98d21f1bd4f96ec34ece05a5af, type: 3}
     amount: 5
     isAutoExpand: 1

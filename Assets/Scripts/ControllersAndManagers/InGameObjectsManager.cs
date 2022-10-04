@@ -16,7 +16,7 @@ public class InGameObjectsManager : MonoBehaviour
 
     [Header("Assets References")]
     [SerializeField] private Asteroid[] asteroidPrefabs;
-    [SerializeField] private Armor spaceshipArmorPrefab;
+    [SerializeField] private Armour spaceshipArmorPrefab;
     [SerializeField] private CrescentArmPowerup crescentArmPowerup;
 
     private bool isGenerateAsteroids;

@@ -102,7 +102,7 @@ public class PlayerSpaceship : MonoBehaviour
             if (tempCollectable.itsGameObject.GetComponent<Coin>() != null)
                 onCoinCollected?.Invoke();
 
-            if (tempCollectable.itsGameObject.GetComponent<Armor>() != null)
+            if (tempCollectable.itsGameObject.GetComponent<Armour>() != null)
                 ActivateSpaceshipArmor();
 
             if (tempCollectable.itsGameObject.GetComponent<CrescentArmPowerup>() != null)
